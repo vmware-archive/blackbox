@@ -1,6 +1,9 @@
 package blackbox
 
-import "log/syslog"
+import (
+	"log/syslog"
+	"sync"
+)
 
 const defaultPriority = syslog.LOG_INFO | syslog.LOG_LOCAL0
 
@@ -8,9 +11,13 @@ type writerPool struct {
 	drain Drain
 
 	pool map[string]*syslog.Writer
+	lock sync.RWMutex
 }
 
 func (pool *writerPool) GetOrBuild(tag string) (*syslog.Writer, error) {
+	pool.lock.Lock()
+	defer pool.lock.Unlock()
+
 	var err error
 	writer, found := pool.pool[tag]
 
