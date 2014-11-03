@@ -37,6 +37,7 @@ func main() {
 	if err != nil {
 		logger.Fatalf("could not drain to syslog: %s\n", err)
 	}
+	defer drainer.Close()
 
 	members := buildTailers(config.Sources, drainer)
 
@@ -44,11 +45,9 @@ func main() {
 	running := ifrit.Invoke(
 		sigmon.New(group),
 	)
+	defer tail.Cleanup()
 
 	err = <-running.Wait()
-
-	tail.Cleanup()
-	drainer.Close()
 
 	if err != nil {
 		logger.Fatalf("failed: %s", err)
