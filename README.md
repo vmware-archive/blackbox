@@ -12,6 +12,9 @@ concern and the application should not know about where it is logging. Blackbox
 is an experiment to decouple syslogging from an application without messing
 about with syslog configuration (which is tricky on BOSH VMs).
 
+Blackbox will tail specified files and forward any new lines to a syslog
+server.
+
 ## usage
 
 ```
