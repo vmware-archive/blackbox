@@ -38,7 +38,7 @@ func main() {
 		logger.Fatalf("could not drain to syslog: %s\n", err)
 	}
 
-	members := buildTailers(config.Files, drainer)
+	members := buildTailers(config.Sources, drainer)
 
 	group := grouper.NewParallel(os.Interrupt, members)
 	running := ifrit.Invoke(
@@ -55,16 +55,16 @@ func main() {
 	}
 }
 
-func buildTailers(filepaths []string, drainer *blackbox.Drainer) grouper.Members {
-	members := make(grouper.Members, len(filepaths))
+func buildTailers(sources []blackbox.Source, drainer *blackbox.Drainer) grouper.Members {
+	members := make(grouper.Members, len(sources))
 
-	for i, filepath := range filepaths {
+	for i, source := range sources {
 		tailer := &blackbox.Tailer{
-			Path:    filepath,
+			Path:    source.Path,
 			Drainer: drainer,
 		}
 
-		members[i] = grouper.Member{filepath, tailer}
+		members[i] = grouper.Member{source.Path, tailer}
 	}
 
 	return members

@@ -11,9 +11,14 @@ type Drain struct {
 	Address   string `yaml:"address"`
 }
 
+type Source struct {
+	Path string `yaml:"path"`
+	Tag  string `yaml:"tag"`
+}
+
 type Config struct {
 	Destination Drain    `yaml:"destination"`
-	Files       []string `yaml:"files"`
+	Sources     []Source `yaml:"sources"`
 }
 
 func LoadConfig(path string) (*Config, error) {

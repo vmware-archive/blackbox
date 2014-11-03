@@ -3,4 +3,5 @@ destination:
   address: logs.example.com:1234
 
 files:
-  - hello.txt
+  - path: hello.txt
+    tag: hello
