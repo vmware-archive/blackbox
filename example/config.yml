@@ -1,0 +1,6 @@
+destination:
+  transport: udp
+  address: logs.example.com:1234
+
+files:
+  - hello.txt
