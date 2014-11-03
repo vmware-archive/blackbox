@@ -7,12 +7,12 @@ import (
 )
 
 type Tailer struct {
-	Path    string
+	Source  Source
 	Drainer *Drainer
 }
 
 func (tailer *Tailer) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
-	t, err := tail.TailFile(tailer.Path, tail.Config{
+	t, err := tail.TailFile(tailer.Source.Path, tail.Config{
 		Follow: true,
 		ReOpen: true,
 		Logger: tail.DiscardingLogger,
@@ -31,7 +31,7 @@ func (tailer *Tailer) Run(signals <-chan os.Signal, ready chan<- struct{}) error
 	for {
 		select {
 		case line := <-t.Lines:
-			tailer.Drainer.Drain(line.Text)
+			tailer.Drainer.Drain(line.Text, tailer.Source.Tag)
 		case <-signals:
 			return t.Stop()
 		}

@@ -47,8 +47,8 @@ func NewDrainer(drain Drain) (*Drainer, error) {
 	}, nil
 }
 
-func (d *Drainer) Drain(line string) error {
-	writer, err := d.writer("blackbox")
+func (d *Drainer) Drain(line string, tag string) error {
+	writer, err := d.writer(tag)
 	if err != nil {
 		return err
 	}

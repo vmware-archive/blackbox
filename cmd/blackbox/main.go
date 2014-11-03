@@ -59,7 +59,7 @@ func buildTailers(sources []blackbox.Source, drainer *blackbox.Drainer) grouper.
 
 	for i, source := range sources {
 		tailer := &blackbox.Tailer{
-			Path:    source.Path,
+			Source:  source,
 			Drainer: drainer,
 		}
 
