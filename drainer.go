@@ -6,7 +6,8 @@ const defaultPriority = syslog.LOG_INFO | syslog.LOG_LOCAL0
 
 type writerPool struct {
 	drain Drain
-	pool  map[string]*syslog.Writer
+
+	pool map[string]*syslog.Writer
 }
 
 func (pool *writerPool) GetOrBuild(tag string) (*syslog.Writer, error) {
@@ -38,7 +39,6 @@ type Drainer struct {
 }
 
 func NewDrainer(drain Drain) (*Drainer, error) {
-
 	return &Drainer{
 		pool: &writerPool{
 			drain: drain,
