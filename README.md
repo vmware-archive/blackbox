@@ -28,7 +28,7 @@ destination:
   transport: udp
   address: logs.example.com:1234
 
-source:
+sources:
   - path: hello.txt
     tag: hello
 ```
