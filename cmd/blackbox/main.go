@@ -33,8 +33,7 @@ func main() {
 		logger.Fatalf("could not load config file: %s\n", err)
 	}
 
-	hostname, _ := os.Hostname()
-	drainer, err := blackbox.NewDrainer(config.Destination, hostname)
+	drainer, err := blackbox.NewDrainer(config.Destination, config.Hostname)
 	if err != nil {
 		logger.Fatalf("could not drain to syslog: %s\n", err)
 	}

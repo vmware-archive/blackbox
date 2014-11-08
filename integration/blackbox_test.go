@@ -36,6 +36,9 @@ var _ = Describe("Blackbox", func() {
 	})
 
 	It("logs any new lines of a watched file to syslog", func() {
+		hostname, err := os.Hostname()
+		Ω(err).ShouldNot(HaveOccurred())
+
 		fileToWatch, err := ioutil.TempFile("", "tail")
 		Ω(err).ShouldNot(HaveOccurred())
 
@@ -61,10 +64,45 @@ var _ = Describe("Blackbox", func() {
 		Eventually(inbox.Messages).Should(Receive(&message))
 		Ω(message.Content).Should(ContainSubstring("hello"))
 		Ω(message.Content).Should(ContainSubstring("test-tag"))
+		Ω(message.Content).Should(ContainSubstring(hostname))
 
 		Eventually(inbox.Messages).Should(Receive(&message))
 		Ω(message.Content).Should(ContainSubstring("world"))
 		Ω(message.Content).Should(ContainSubstring("test-tag"))
+		Ω(message.Content).Should(ContainSubstring(hostname))
+
+		blackboxRunner.Stop()
+		fileToWatch.Close()
+		os.Remove(fileToWatch.Name())
+	})
+
+	It("can have a custom hostname", func() {
+		fileToWatch, err := ioutil.TempFile("", "tail")
+		Ω(err).ShouldNot(HaveOccurred())
+
+		config := blackbox.Config{
+			Hostname: "fake-hostname",
+			Destination: blackbox.Drain{
+				Transport: "udp",
+				Address:   "127.0.0.1:8742",
+			},
+			Sources: []blackbox.Source{
+				{
+					Path: fileToWatch.Name(),
+					Tag:  "test-tag",
+				},
+			},
+		}
+
+		blackboxRunner.StartWithConfig(config)
+
+		fileToWatch.WriteString("hello\n")
+
+		var message *syslog.Message
+		Eventually(inbox.Messages).Should(Receive(&message))
+		Ω(message.Content).Should(ContainSubstring("hello"))
+		Ω(message.Content).Should(ContainSubstring("test-tag"))
+		Ω(message.Content).Should(ContainSubstring("fake-hostname"))
 
 		blackboxRunner.Stop()
 		fileToWatch.Close()

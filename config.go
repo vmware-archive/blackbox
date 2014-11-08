@@ -17,6 +17,7 @@ type Source struct {
 }
 
 type Config struct {
+	Hostname    string   `yaml:"hostname"`
 	Destination Drain    `yaml:"destination"`
 	Sources     []Source `yaml:"sources"`
 }
@@ -32,6 +33,15 @@ func LoadConfig(path string) (*Config, error) {
 
 	if err := candiedyaml.NewDecoder(configFile).Decode(&config); err != nil {
 		return nil, err
+	}
+
+	if config.Hostname == "" {
+		hostname, err := os.Hostname()
+		if err != nil {
+			return nil, err
+		}
+
+		config.Hostname = hostname
 	}
 
 	return &config, nil
