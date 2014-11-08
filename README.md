@@ -34,7 +34,7 @@ sources:
 ```
 
 Each file can be sent with a different tag. Currently the priority and facility
-are hardcoded to `INFO` and `local0`. However, allowing customisation of these
+are hardcoded to `INFO` and `user`. However, allowing customisation of these
 per source would not be difficult.
 
 ## installation

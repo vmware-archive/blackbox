@@ -1,72 +1,48 @@
 package blackbox
 
 import (
-	"log/syslog"
-	"sync"
+	"time"
+
+	"github.com/papertrail/remote_syslog2/syslog"
 )
 
-const defaultPriority = syslog.LOG_INFO | syslog.LOG_LOCAL0
-
-type writerPool struct {
-	drain Drain
-
-	pool map[string]*syslog.Writer
-	lock sync.RWMutex
-}
-
-func (pool *writerPool) GetOrBuild(tag string) (*syslog.Writer, error) {
-	pool.lock.Lock()
-	defer pool.lock.Unlock()
-
-	var err error
-	writer, found := pool.pool[tag]
-
-	if !found {
-		writer, err = syslog.Dial(pool.drain.Transport, pool.drain.Address, defaultPriority, tag)
-		if err != nil {
-			return nil, err
-		}
-
-		pool.pool[tag] = writer
-	}
-
-	return writer, nil
-}
-
-func (pool *writerPool) Close() error {
-	for _, writer := range pool.pool {
-		writer.Close()
-	}
-
-	return nil
-}
-
 type Drainer struct {
-	pool *writerPool
+	logger   *syslog.Logger
+	hostname string
 }
 
-func NewDrainer(drain Drain) (*Drainer, error) {
+func NewDrainer(drain Drain, hostname string) (*Drainer, error) {
+	logger, err := syslog.Dial(
+		hostname,
+		drain.Transport,
+		drain.Address,
+		nil,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &Drainer{
-		pool: &writerPool{
-			drain: drain,
-			pool:  make(map[string]*syslog.Writer),
-		},
+		logger:   logger,
+		hostname: hostname,
 	}, nil
 }
 
 func (d *Drainer) Drain(line string, tag string) error {
-	writer, err := d.writer(tag)
-	if err != nil {
-		return err
+	d.logger.Packets <- syslog.Packet{
+		Severity: syslog.SevInfo,
+		Facility: syslog.LogUser,
+		Hostname: d.hostname,
+		Tag:      tag,
+		Time:     time.Now(),
+		Message:  line,
 	}
 
-	return writer.Info(line)
-}
-
-func (d *Drainer) Close() error {
-	return d.pool.Close()
-}
-
-func (d *Drainer) writer(tag string) (*syslog.Writer, error) {
-	return d.pool.GetOrBuild(tag)
+	select {
+	case err := <-d.logger.Errors:
+		return err
+	default:
+		return nil
+	}
 }
