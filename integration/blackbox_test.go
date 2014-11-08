@@ -3,6 +3,7 @@ package integration_test
 import (
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/concourse/blackbox"
 	. "github.com/onsi/ginkgo"
@@ -28,10 +29,14 @@ var _ = Describe("Blackbox", func() {
 
 	AfterEach(func() {
 		syslogServer.Shutdown()
+
+		// The socket seems to stay open and grab adjacent test messages.
+		// Sleep-driven development until this is fixed.
+		time.Sleep(1 * time.Second)
 	})
 
 	It("logs any new lines of a watched file to syslog", func() {
-		fileToWatch, err := ioutil.TempFile("", "blackbox")
+		fileToWatch, err := ioutil.TempFile("", "tail")
 		Ω(err).ShouldNot(HaveOccurred())
 
 		config := blackbox.Config{
@@ -60,6 +65,33 @@ var _ = Describe("Blackbox", func() {
 		Eventually(inbox.Messages).Should(Receive(&message))
 		Ω(message.Content).Should(ContainSubstring("world"))
 		Ω(message.Content).Should(ContainSubstring("test-tag"))
+
+		blackboxRunner.Stop()
+		fileToWatch.Close()
+		os.Remove(fileToWatch.Name())
+	})
+
+	It("does not log existing messages", func() {
+		fileToWatch, err := ioutil.TempFile("", "tail")
+		Ω(err).ShouldNot(HaveOccurred())
+
+		fileToWatch.WriteString("already present\n")
+
+		config := blackbox.Config{
+			Destination: blackbox.Drain{
+				Transport: "udp",
+				Address:   "127.0.0.1:8742",
+			},
+			Sources: []blackbox.Source{
+				{
+					Path: fileToWatch.Name(),
+					Tag:  "test-tag",
+				},
+			},
+		}
+
+		blackboxRunner.StartWithConfig(config)
+		Consistently(inbox.Messages).ShouldNot(Receive())
 
 		blackboxRunner.Stop()
 		fileToWatch.Close()

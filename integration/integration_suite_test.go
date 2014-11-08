@@ -41,7 +41,7 @@ type Inbox struct {
 
 func NewInbox() *Inbox {
 	return &Inbox{
-		Messages: make(chan *syslog.Message, 10),
+		Messages: make(chan *syslog.Message),
 	}
 }
 

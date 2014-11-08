@@ -18,7 +18,7 @@ func (tailer *Tailer) Run(signals <-chan os.Signal, ready chan<- struct{}) error
 		Logger: tail.DiscardingLogger,
 		Location: &tail.SeekInfo{
 			Offset: 0,
-			Whence: 2,
+			Whence: os.SEEK_END,
 		},
 	})
 
