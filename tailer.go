@@ -31,6 +31,10 @@ func (tailer *Tailer) Run(signals <-chan os.Signal, ready chan<- struct{}) error
 	for {
 		select {
 		case line := <-t.Lines:
+			if line == nil {
+				continue
+			}
+
 			tailer.Drainer.Drain(line.Text, tailer.Source.Tag)
 		case <-signals:
 			return t.Stop()
