@@ -5,10 +5,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/concourse/blackbox"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	"github.com/concourse/blackbox"
 	"github.com/ziutek/syslog"
 )
 
