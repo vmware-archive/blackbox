@@ -13,8 +13,8 @@ import (
 	"github.com/tedsuo/ifrit"
 	"github.com/tedsuo/ifrit/ginkgomon"
 
+	"github.com/cloudfoundry-incubator/candiedyaml"
 	"github.com/concourse/blackbox"
-	"github.com/fraenkel/candiedyaml"
 	"github.com/ziutek/syslog"
 )
 

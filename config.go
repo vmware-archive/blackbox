@@ -3,7 +3,7 @@ package blackbox
 import (
 	"os"
 
-	"github.com/fraenkel/candiedyaml"
+	"github.com/cloudfoundry-incubator/candiedyaml"
 )
 
 type Drain struct {
