@@ -6,12 +6,12 @@ import (
 	"github.com/papertrail/remote_syslog2/syslog"
 )
 
-type Drainer struct {
+type SyslogDrainer struct {
 	logger   *syslog.Logger
 	hostname string
 }
 
-func NewDrainer(drain Drain, hostname string) (*Drainer, error) {
+func NewDrainer(drain SyslogDrain, hostname string) (*SyslogDrainer, error) {
 	logger, err := syslog.Dial(
 		hostname,
 		drain.Transport,
@@ -23,13 +23,13 @@ func NewDrainer(drain Drain, hostname string) (*Drainer, error) {
 		return nil, err
 	}
 
-	return &Drainer{
+	return &SyslogDrainer{
 		logger:   logger,
 		hostname: hostname,
 	}, nil
 }
 
-func (d *Drainer) Drain(line string, tag string) error {
+func (d *SyslogDrainer) Drain(line string, tag string) error {
 	d.logger.Packets <- syslog.Packet{
 		Severity: syslog.SevInfo,
 		Facility: syslog.LogUser,

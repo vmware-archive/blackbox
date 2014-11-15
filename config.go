@@ -6,7 +6,7 @@ import (
 	"github.com/cloudfoundry-incubator/candiedyaml"
 )
 
-type Drain struct {
+type SyslogDrain struct {
 	Transport string `yaml:"transport"`
 	Address   string `yaml:"address"`
 }
@@ -17,9 +17,9 @@ type Source struct {
 }
 
 type Config struct {
-	Hostname    string   `yaml:"hostname"`
-	Destination Drain    `yaml:"destination"`
-	Sources     []Source `yaml:"sources"`
+	Hostname    string      `yaml:"hostname"`
+	Destination SyslogDrain `yaml:"destination"`
+	Sources     []Source    `yaml:"sources"`
 }
 
 func LoadConfig(path string) (*Config, error) {

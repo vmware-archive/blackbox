@@ -53,7 +53,7 @@ func main() {
 	}
 }
 
-func buildTailers(sources []blackbox.Source, drainer *blackbox.Drainer) grouper.Members {
+func buildTailers(sources []blackbox.Source, drainer *blackbox.SyslogDrainer) grouper.Members {
 	members := make(grouper.Members, len(sources))
 
 	for i, source := range sources {
