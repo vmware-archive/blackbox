@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/ActiveState/tail"
 	"github.com/tedsuo/ifrit"
 	"github.com/tedsuo/ifrit/grouper"
 	"github.com/tedsuo/ifrit/sigmon"
@@ -44,7 +43,6 @@ func main() {
 	running := ifrit.Invoke(
 		sigmon.New(group),
 	)
-	defer tail.Cleanup()
 
 	err = <-running.Wait()
 
