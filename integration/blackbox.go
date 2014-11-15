@@ -91,6 +91,7 @@ func (runner *BlackboxRunner) StartWithConfig(config blackbox.Config) {
 			Name:          "blackbox",
 			Command:       blackboxCmd,
 			AnsiColorCode: "90m",
+			StartCheck:    "Seeked",
 			Cleanup: func() {
 				os.Remove(configPath)
 			},

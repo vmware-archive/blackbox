@@ -60,14 +60,15 @@ var _ = Describe("Blackbox", func() {
 		fileToWatch.WriteString("hello\n")
 		fileToWatch.WriteString("world\n")
 		fileToWatch.Sync()
+		fileToWatch.Close()
 
 		var message *syslog.Message
-		Eventually(inbox.Messages).Should(Receive(&message))
+		Eventually(inbox.Messages, "2s").Should(Receive(&message))
 		Ω(message.Content).Should(ContainSubstring("hello"))
 		Ω(message.Content).Should(ContainSubstring("test-tag"))
 		Ω(message.Content).Should(ContainSubstring(Hostname()))
 
-		Eventually(inbox.Messages).Should(Receive(&message))
+		Eventually(inbox.Messages, "2s").Should(Receive(&message))
 		Ω(message.Content).Should(ContainSubstring("world"))
 		Ω(message.Content).Should(ContainSubstring("test-tag"))
 		Ω(message.Content).Should(ContainSubstring(Hostname()))
@@ -86,15 +87,15 @@ var _ = Describe("Blackbox", func() {
 
 		fileToWatch.WriteString("hello\n")
 		fileToWatch.Sync()
+		fileToWatch.Close()
 
 		var message *syslog.Message
-		Eventually(inbox.Messages).Should(Receive(&message))
+		Eventually(inbox.Messages, "2s").Should(Receive(&message))
 		Ω(message.Content).Should(ContainSubstring("hello"))
 		Ω(message.Content).Should(ContainSubstring("test-tag"))
 		Ω(message.Content).Should(ContainSubstring("fake-hostname"))
 
 		blackboxRunner.Stop()
-		fileToWatch.Close()
 		os.Remove(fileToWatch.Name())
 	})
 
@@ -110,14 +111,14 @@ var _ = Describe("Blackbox", func() {
 
 		fileToWatch.WriteString("hello\n")
 		fileToWatch.Sync()
+		fileToWatch.Close()
 
 		var message *syslog.Message
-		Eventually(inbox.Messages).Should(Receive(&message))
+		Eventually(inbox.Messages, "2s").Should(Receive(&message))
 		Ω(message.Content).Should(ContainSubstring("hello"))
 		Ω(message.Content).Should(ContainSubstring("test-tag"))
 
 		blackboxRunner.Stop()
-		fileToWatch.Close()
 		os.Remove(fileToWatch.Name())
 	})
 })
