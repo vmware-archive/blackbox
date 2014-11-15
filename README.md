@@ -25,6 +25,7 @@ The configuration file schema is as follows:
 
 ``` yaml
 hostname: this-host
+
 destination:
   transport: udp
   address: logs.example.com:1234
