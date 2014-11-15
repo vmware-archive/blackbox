@@ -8,7 +8,7 @@ import (
 
 type Tailer struct {
 	Source  Source
-	Drainer *SyslogDrainer
+	Drainer Drainer
 }
 
 func (tailer *Tailer) Run(signals <-chan os.Signal, ready chan<- struct{}) error {

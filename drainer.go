@@ -6,12 +6,16 @@ import (
 	"github.com/papertrail/remote_syslog2/syslog"
 )
 
+type Drainer interface {
+	Drain(line string, tag string) error
+}
+
 type SyslogDrainer struct {
 	logger   *syslog.Logger
 	hostname string
 }
 
-func NewDrainer(drain SyslogDrain, hostname string) (*SyslogDrainer, error) {
+func NewSyslogDrainer(drain SyslogDrain, hostname string) (*SyslogDrainer, error) {
 	logger, err := syslog.Dial(
 		hostname,
 		drain.Transport,
