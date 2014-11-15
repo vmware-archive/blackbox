@@ -59,6 +59,7 @@ var _ = Describe("Blackbox", func() {
 
 		fileToWatch.WriteString("hello\n")
 		fileToWatch.WriteString("world\n")
+		fileToWatch.Sync()
 
 		var message *syslog.Message
 		Eventually(inbox.Messages).Should(Receive(&message))
@@ -84,6 +85,7 @@ var _ = Describe("Blackbox", func() {
 		blackboxRunner.StartWithConfig(config)
 
 		fileToWatch.WriteString("hello\n")
+		fileToWatch.Sync()
 
 		var message *syslog.Message
 		Eventually(inbox.Messages).Should(Receive(&message))
@@ -101,11 +103,13 @@ var _ = Describe("Blackbox", func() {
 		Ω(err).ShouldNot(HaveOccurred())
 
 		fileToWatch.WriteString("already present\n")
+		fileToWatch.Sync()
 
 		config := buildConfig(fileToWatch.Name())
 		blackboxRunner.StartWithConfig(config)
 
 		fileToWatch.WriteString("hello\n")
+		fileToWatch.Sync()
 
 		var message *syslog.Message
 		Eventually(inbox.Messages).Should(Receive(&message))
