@@ -1,5 +1,7 @@
 package blackbox
 
+//go:generate counterfeiter . Drainer
+
 import (
 	"time"
 
