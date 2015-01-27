@@ -63,7 +63,7 @@ var _ = Describe("Blackbox", func() {
 		fileToWatch.Close()
 
 		var message *syslog.Message
-		Eventually(inbox.Messages, "2s").Should(Receive(&message))
+		Eventually(inbox.Messages, "5s").Should(Receive(&message))
 		Ω(message.Content).Should(ContainSubstring("hello"))
 		Ω(message.Content).Should(ContainSubstring("test-tag"))
 		Ω(message.Content).Should(ContainSubstring(Hostname()))
