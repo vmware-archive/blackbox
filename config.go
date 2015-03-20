@@ -16,10 +16,15 @@ type Source struct {
 	Tag  string `yaml:"tag"`
 }
 
-type Config struct {
-	Hostname    string      `yaml:"hostname"`
+type SyslogConfig struct {
 	Destination SyslogDrain `yaml:"destination"`
 	Sources     []Source    `yaml:"sources"`
+}
+
+type Config struct {
+	Hostname string `yaml:"hostname"`
+
+	SyslogConfig SyslogConfig `yaml:"syslog"`
 }
 
 func LoadConfig(path string) (*Config, error) {
