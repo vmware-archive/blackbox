@@ -9,12 +9,32 @@ import (
 	"github.com/concourse/blackbox/expvar"
 )
 
-type Emitter struct {
+type emitter struct {
 	datadog datadog.Client
 	expvar  expvar.Fetcher
+
+	interval time.Duration
+	host     string
+	tags     []string
 }
 
-func (e *Emitter) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
+func NewEmitter(
+	datadog datadog.Client,
+	expvar expvar.Fetcher,
+	interval time.Duration,
+	host string,
+	tags []string,
+) *emitter {
+	return &emitter{
+		datadog:  datadog,
+		expvar:   expvar,
+		interval: interval,
+		host:     host,
+		tags:     tags,
+	}
+}
+
+func (e *emitter) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 	close(ready)
 
 	for {
@@ -33,8 +53,8 @@ func (e *Emitter) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 				Points: []datadog.Point{
 					{Timestamp: now, Value: value},
 				},
-				Host: "a-host",                 // TODO
-				Tags: []string{"cool", "tags"}, // TODO
+				Host: e.host,
+				Tags: e.tags,
 			})
 		})
 
@@ -42,7 +62,7 @@ func (e *Emitter) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 			log.Println("failed publish series: %s", err)
 		}
 
-		time.Sleep(10 * time.Second) // TODO
+		time.Sleep(e.interval)
 	}
 
 	return nil
