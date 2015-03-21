@@ -52,6 +52,13 @@ var _ = Describe("Expvar", func() {
 		Ω(seen).Should(HaveKeyWithValue("memstats.HeapReleased", float32(0)))
 	})
 
+	It("lets people get the size of the expvars", func() {
+		expvars, err := fetcher.Fetch()
+		Ω(err).ShouldNot(HaveOccurred())
+
+		Ω(expvars.Size()).Should(Equal(25))
+	})
+
 	Context("when the server is down", func() {
 		BeforeEach(func() {
 			server.Close()

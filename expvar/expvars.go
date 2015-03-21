@@ -6,6 +6,16 @@ type WalkFunc func(path string, value float32)
 
 type Expvars map[string]interface{}
 
+func (e Expvars) Size() int {
+	size := 0
+
+	e.Walk(func(path string, value float32) {
+		size++
+	})
+
+	return size
+}
+
 func (e Expvars) Walk(fn WalkFunc) {
 	for p, v := range e {
 		e.walkRec(p, v, fn)

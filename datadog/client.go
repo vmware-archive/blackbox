@@ -46,6 +46,12 @@ type request struct {
 	Series Series `json:"series"`
 }
 
+//go:generate counterfeiter . Client
+
+type Client interface {
+	PublishSeries(series Series) error
+}
+
 type client struct {
 	apiKey string
 	client *http.Client

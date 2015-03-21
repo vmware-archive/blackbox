@@ -6,6 +6,8 @@ import (
 	"net/http"
 )
 
+//go:generate counterfeiter . Fetcher
+
 type Fetcher interface {
 	Fetch() (Expvars, error)
 }
