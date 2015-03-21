@@ -10,6 +10,7 @@ import (
 	"github.com/tedsuo/ifrit/sigmon"
 
 	"github.com/concourse/blackbox"
+	"github.com/concourse/blackbox/syslog"
 )
 
 var configPath = flag.String(
@@ -32,7 +33,7 @@ func main() {
 		logger.Fatalf("could not load config file: %s\n", err)
 	}
 
-	drainer, err := blackbox.NewSyslogDrainer(
+	drainer, err := syslog.NewDrainer(
 		config.SyslogConfig.Destination,
 		config.Hostname,
 	)
@@ -54,7 +55,7 @@ func main() {
 	}
 }
 
-func buildTailers(sources []blackbox.Source, drainer *blackbox.SyslogDrainer) grouper.Members {
+func buildTailers(sources []blackbox.Source, drainer syslog.Drainer) grouper.Members {
 	members := make(grouper.Members, len(sources))
 
 	for i, source := range sources {

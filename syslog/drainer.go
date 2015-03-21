@@ -1,6 +1,4 @@
-package blackbox
-
-//go:generate counterfeiter . Drainer
+package syslog
 
 import (
 	"time"
@@ -8,16 +6,23 @@ import (
 	"github.com/papertrail/remote_syslog2/syslog"
 )
 
+type Drain struct {
+	Transport string `yaml:"transport"`
+	Address   string `yaml:"address"`
+}
+
+//go:generate counterfeiter . Drainer
+
 type Drainer interface {
 	Drain(line string, tag string) error
 }
 
-type SyslogDrainer struct {
+type drainer struct {
 	logger   *syslog.Logger
 	hostname string
 }
 
-func NewSyslogDrainer(drain SyslogDrain, hostname string) (*SyslogDrainer, error) {
+func NewDrainer(drain Drain, hostname string) (*drainer, error) {
 	logger, err := syslog.Dial(
 		hostname,
 		drain.Transport,
@@ -29,13 +34,13 @@ func NewSyslogDrainer(drain SyslogDrain, hostname string) (*SyslogDrainer, error
 		return nil, err
 	}
 
-	return &SyslogDrainer{
+	return &drainer{
 		logger:   logger,
 		hostname: hostname,
 	}, nil
 }
 
-func (d *SyslogDrainer) Drain(line string, tag string) error {
+func (d *drainer) Drain(line string, tag string) error {
 	d.logger.Packets <- syslog.Packet{
 		Severity: syslog.SevInfo,
 		Facility: syslog.LogUser,

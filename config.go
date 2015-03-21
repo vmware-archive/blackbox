@@ -4,12 +4,9 @@ import (
 	"os"
 
 	"github.com/cloudfoundry-incubator/candiedyaml"
-)
 
-type SyslogDrain struct {
-	Transport string `yaml:"transport"`
-	Address   string `yaml:"address"`
-}
+	"github.com/concourse/blackbox/syslog"
+)
 
 type Source struct {
 	Path string `yaml:"path"`
@@ -17,8 +14,8 @@ type Source struct {
 }
 
 type SyslogConfig struct {
-	Destination SyslogDrain `yaml:"destination"`
-	Sources     []Source    `yaml:"sources"`
+	Destination syslog.Drain `yaml:"destination"`
+	Sources     []Source     `yaml:"sources"`
 }
 
 type Config struct {

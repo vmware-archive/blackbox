@@ -4,11 +4,13 @@ import (
 	"os"
 
 	"github.com/ActiveState/tail"
+
+	"github.com/concourse/blackbox/syslog"
 )
 
 type Tailer struct {
 	Source  Source
-	Drainer Drainer
+	Drainer syslog.Drainer
 }
 
 func (tailer *Tailer) Run(signals <-chan os.Signal, ready chan<- struct{}) error {

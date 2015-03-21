@@ -9,8 +9,10 @@ import (
 
 	. "github.com/concourse/blackbox/integration"
 
+	sl "github.com/ziutek/syslog"
+
 	"github.com/concourse/blackbox"
-	"github.com/ziutek/syslog"
+	"github.com/concourse/blackbox/syslog"
 )
 
 var _ = Describe("Blackbox", func() {
@@ -34,7 +36,7 @@ var _ = Describe("Blackbox", func() {
 		return blackbox.Config{
 			Hostname: hostname,
 			SyslogConfig: blackbox.SyslogConfig{
-				Destination: blackbox.SyslogDrain{
+				Destination: syslog.Drain{
 					Transport: "udp",
 					Address:   syslogServer.Addr,
 				},
@@ -64,7 +66,7 @@ var _ = Describe("Blackbox", func() {
 		fileToWatch.Sync()
 		fileToWatch.Close()
 
-		var message *syslog.Message
+		var message *sl.Message
 		Eventually(inbox.Messages, "5s").Should(Receive(&message))
 		Ω(message.Content).Should(ContainSubstring("hello"))
 		Ω(message.Content).Should(ContainSubstring("test-tag"))
@@ -91,7 +93,7 @@ var _ = Describe("Blackbox", func() {
 		fileToWatch.Sync()
 		fileToWatch.Close()
 
-		var message *syslog.Message
+		var message *sl.Message
 		Eventually(inbox.Messages, "5s").Should(Receive(&message))
 		Ω(message.Content).Should(ContainSubstring("hello"))
 		Ω(message.Content).Should(ContainSubstring("test-tag"))
@@ -115,7 +117,7 @@ var _ = Describe("Blackbox", func() {
 		fileToWatch.Sync()
 		fileToWatch.Close()
 
-		var message *syslog.Message
+		var message *sl.Message
 		Eventually(inbox.Messages, "2s").Should(Receive(&message))
 		Ω(message.Content).Should(ContainSubstring("hello"))
 		Ω(message.Content).Should(ContainSubstring("test-tag"))
