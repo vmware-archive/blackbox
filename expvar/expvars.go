@@ -2,7 +2,7 @@ package expvar
 
 import "reflect"
 
-type WalkFunc func(path string, value float64)
+type WalkFunc func(path string, value float32)
 
 type Expvars map[string]interface{}
 
@@ -17,13 +17,13 @@ func (e Expvars) walkRec(path string, value interface{}, fn WalkFunc) {
 
 	switch val.Kind() {
 	case reflect.Int:
-		fn(path, float64(val.Int()))
+		fn(path, float32(val.Int()))
 	case reflect.Uint:
-		fn(path, float64(val.Uint()))
+		fn(path, float32(val.Uint()))
 	case reflect.Float32:
-		fn(path, val.Float())
+		fn(path, float32(val.Float()))
 	case reflect.Float64:
-		fn(path, val.Float())
+		fn(path, float32(val.Float()))
 	case reflect.Map:
 		for _, key := range val.MapKeys() {
 			if key.Kind() == reflect.String {

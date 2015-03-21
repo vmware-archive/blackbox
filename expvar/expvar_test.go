@@ -41,15 +41,15 @@ var _ = Describe("Expvar", func() {
 		expvars, err := fetcher.Fetch()
 		Ω(err).ShouldNot(HaveOccurred())
 
-		seen := map[string]float64{}
+		seen := map[string]float32{}
 
-		expvars.Walk(func(path string, value float64) {
+		expvars.Walk(func(path string, value float32) {
 			seen[path] = value
 		})
 
 		// some random keys
-		Ω(seen).Should(HaveKeyWithValue("memstats.Alloc", float64(202208)))
-		Ω(seen).Should(HaveKeyWithValue("memstats.HeapReleased", float64(0)))
+		Ω(seen).Should(HaveKeyWithValue("memstats.Alloc", float32(202208)))
+		Ω(seen).Should(HaveKeyWithValue("memstats.HeapReleased", float32(0)))
 	})
 
 	Context("when the server is down", func() {
