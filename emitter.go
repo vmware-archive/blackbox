@@ -59,11 +59,14 @@ func (e *emitter) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 		})
 
 		if err := e.datadog.PublishSeries(series); err != nil {
-			log.Println("failed publish series: %s", err)
+			log.Println("failed to publish series: %s", err)
+		}
+
+		select {
+		case <-signals:
+			return nil
 		}
 
 		time.Sleep(e.interval)
 	}
-
-	return nil
 }
