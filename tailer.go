@@ -9,7 +9,7 @@ import (
 )
 
 type Tailer struct {
-	Source  Source
+	Source  SyslogSource
 	Drainer syslog.Drainer
 }
 

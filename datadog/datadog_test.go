@@ -43,7 +43,7 @@ var _ = Describe("Datadog", func() {
 				Ω(metric.Points[2].Timestamp).Should(BeTemporally("~", time.Now(), time.Second))
 				Ω(metric.Points[2].Value).Should(BeNumerically("~", 23.25, 0.01))
 			},
-			ghttp.RespondWith(200, "{}"),
+			ghttp.RespondWith(http.StatusAccepted, "{}"),
 		))
 
 		datadog.APIURL = server.URL()
@@ -78,6 +78,22 @@ var _ = Describe("Datadog", func() {
 		BeforeEach(func() {
 			server.Close()
 			server = nil
+		})
+
+		It("returns an error", func() {
+			client := datadog.NewClient("api-key")
+
+			err := client.PublishSeries(datadog.Series{})
+			Ω(err).Should(HaveOccurred())
+		})
+	})
+
+	Context("when the server does not respond with 202", func() {
+		BeforeEach(func() {
+			server.AppendHandlers(ghttp.CombineHandlers(
+				ghttp.VerifyRequest("POST", "/api/v1/series", "api_key=api-key"),
+				ghttp.RespondWith(http.StatusInternalServerError, "{}"),
+			))
 		})
 
 		It("returns an error", func() {

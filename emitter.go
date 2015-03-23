@@ -37,11 +37,20 @@ func NewEmitter(
 func (e *emitter) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 	close(ready)
 
+	ticker := time.NewTicker(e.interval)
+
 	for {
 		expvars, err := e.expvar.Fetch()
 		if err != nil {
-			log.Println("failed to fetch expvars: %s", err)
-			continue
+			log.Printf("failed to fetch expvars: %s\n", err)
+
+			select {
+			case <-ticker.C:
+				continue
+			case <-signals:
+				ticker.Stop()
+				return nil
+			}
 		}
 
 		series := make(datadog.Series, 0, expvars.Size())
@@ -59,14 +68,15 @@ func (e *emitter) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 		})
 
 		if err := e.datadog.PublishSeries(series); err != nil {
-			log.Println("failed to publish series: %s", err)
+			log.Printf("failed to publish series: %s\n", err)
 		}
 
 		select {
+		case <-ticker.C:
+			continue
 		case <-signals:
+			ticker.Stop()
 			return nil
 		}
-
-		time.Sleep(e.interval)
 	}
 }

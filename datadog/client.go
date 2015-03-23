@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -69,12 +70,12 @@ func (c *client) PublishSeries(series Series) error {
 		Series: series,
 	}
 
-	buffer := &bytes.Buffer{}
-	if err := json.NewEncoder(buffer).Encode(request); err != nil {
-		return fmt.Errorf("encoding request: %s", err)
+	payload, err := json.Marshal(request)
+	if err != nil {
+		return err
 	}
 
-	req, err := http.NewRequest("POST", APIURL+"/api/v1/series", buffer)
+	req, err := http.NewRequest("POST", APIURL+"/api/v1/series", bytes.NewBuffer(payload))
 	if err != nil {
 		return fmt.Errorf("building request: %s", err)
 	}
@@ -84,10 +85,15 @@ func (c *client) PublishSeries(series Series) error {
 	req.URL.RawQuery = auth.Encode()
 
 	req.Header.Set("Content-type", "application/json")
+	req.Header.Set("Content-length", strconv.Itoa(len(payload)))
 
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return fmt.Errorf("response: %s", err)
+	}
+
+	if resp.StatusCode != http.StatusAccepted {
+		return fmt.Errorf("bad response (!202): %s\n", err)
 	}
 
 	return resp.Body.Close()

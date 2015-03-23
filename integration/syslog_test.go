@@ -35,12 +35,12 @@ var _ = Describe("Blackbox", func() {
 	buildConfigHostname := func(hostname string, filePathToWatch string) blackbox.Config {
 		return blackbox.Config{
 			Hostname: hostname,
-			SyslogConfig: blackbox.SyslogConfig{
+			Syslog: blackbox.SyslogConfig{
 				Destination: syslog.Drain{
 					Transport: "udp",
 					Address:   syslogServer.Addr,
 				},
-				Sources: []blackbox.Source{
+				Sources: []blackbox.SyslogSource{
 					{
 						Path: filePathToWatch,
 						Tag:  "test-tag",
