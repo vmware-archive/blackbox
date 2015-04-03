@@ -56,13 +56,10 @@ func main() {
 		members = append(members, buildEmitters(config.Hostname, config.Expvar, datadogClient)...)
 	}
 
-	group := grouper.NewParallel(os.Interrupt, members)
-	running := ifrit.Invoke(
-		sigmon.New(group),
-	)
+	group := grouper.NewParallel(nil, members)
+	running := ifrit.Invoke(sigmon.New(group))
 
 	err = <-running.Wait()
-
 	if err != nil {
 		logger.Fatalf("failed: %s", err)
 	}
