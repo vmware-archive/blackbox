@@ -2,12 +2,12 @@ package blackbox
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"time"
 
-	"github.com/cloudfoundry-incubator/candiedyaml"
-
 	"github.com/concourse/blackbox/syslog"
+	"gopkg.in/yaml.v2"
 )
 
 type Duration time.Duration
@@ -54,9 +54,9 @@ type DatadogConfig struct {
 }
 
 type ExpvarConfig struct {
-	Interval Duration       `yaml: "interval"`
-	Datadog  DatadogConfig  `yaml: "datadog"`
-	Sources  []ExpvarSource `yaml: "sources"`
+	Interval Duration       `yaml:"interval"`
+	Datadog  DatadogConfig  `yaml:"datadog"`
+	Sources  []ExpvarSource `yaml:"sources"`
 }
 
 type Config struct {
@@ -67,15 +67,14 @@ type Config struct {
 }
 
 func LoadConfig(path string) (*Config, error) {
-	configFile, err := os.Open(path)
+	configFile, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	defer configFile.Close()
 
 	var config Config
 
-	if err := candiedyaml.NewDecoder(configFile).Decode(&config); err != nil {
+	if err := yaml.Unmarshal(configFile, &config); err != nil {
 		return nil, err
 	}
 

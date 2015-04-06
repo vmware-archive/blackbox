@@ -8,8 +8,8 @@ import (
 	"os/exec"
 
 	. "github.com/onsi/gomega"
+	"gopkg.in/yaml.v2"
 
-	"github.com/cloudfoundry-incubator/candiedyaml"
 	"github.com/tedsuo/ifrit"
 	"github.com/tedsuo/ifrit/ginkgomon"
 	"github.com/ziutek/syslog"
@@ -110,8 +110,10 @@ func (runner *BlackboxRunner) createConfigFile(config blackbox.Config) string {
 	Ω(err).ShouldNot(HaveOccurred())
 	defer configFile.Close()
 
-	err = candiedyaml.NewEncoder(configFile).Encode(config)
+	yamlToWrite, err := yaml.Marshal(config)
 	Ω(err).ShouldNot(HaveOccurred())
+
+	configFile.Write(yamlToWrite)
 
 	return configFile.Name()
 }
