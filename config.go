@@ -1,7 +1,7 @@
 package blackbox
 
 import (
-	"fmt"
+	"errors"
 	"io/ioutil"
 	"os"
 	"time"
@@ -12,15 +12,16 @@ import (
 
 type Duration time.Duration
 
-func (d *Duration) UnmarshalYAML(tag string, value interface{}) error {
-	if num, ok := value.(int64); ok {
+func (d *Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var num int64
+	if err := unmarshal(&num); err == nil {
 		*d = Duration(num)
 		return nil
 	}
 
-	str, ok := value.(string)
-	if !ok {
-		return fmt.Errorf("invalid duration: %T (%#v)", value, value)
+	var str string
+	if err := unmarshal(&str); err != nil {
+		return errors.New("invalid duration; must be string or number")
 	}
 
 	duration, err := time.ParseDuration(str)
