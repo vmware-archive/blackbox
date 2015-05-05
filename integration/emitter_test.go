@@ -2,6 +2,8 @@ package integration
 
 import (
 	"errors"
+	"io/ioutil"
+	"log"
 	"time"
 
 	dfakes "github.com/concourse/blackbox/datadog/fakes"
@@ -72,6 +74,8 @@ var _ = Describe("Emitter", func() {
 
 	Context("when fetching expvars fails", func() {
 		BeforeEach(func() {
+			log.SetOutput(ioutil.Discard)
+
 			error := errors.New("disaster")
 			fakeFetcher.FetchReturns(expvar.Expvars{}, error)
 		})
