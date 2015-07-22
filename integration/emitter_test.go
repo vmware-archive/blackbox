@@ -67,7 +67,7 @@ var _ = Describe("Emitter", func() {
 			Ω(metric.Tags).Should(ConsistOf("some", "great", "tags"))
 
 			point := metric.Points[0]
-			Ω(point.Timestamp).Should(BeTemporally("~", time.Now()))
+			Ω(point.Timestamp).Should(BeTemporally("~", time.Now(), 1*time.Second))
 			Ω(point.Value).Should(BeNumerically("~", 3.23, 0.0001))
 		})
 	})
