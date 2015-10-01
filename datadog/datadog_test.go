@@ -40,21 +40,21 @@ var _ = Describe("Datadog", func() {
 				ghttp.VerifyRequest("POST", "/api/v1/series", "api_key=api-key"),
 				func(w http.ResponseWriter, r *http.Request) {
 					var request request
-					Ω(json.NewDecoder(r.Body).Decode(&request)).Should(Succeed())
+					Expect(json.NewDecoder(r.Body).Decode(&request)).To(Succeed())
 					metric := request.Series[0]
 
-					Ω(metric.Name).Should(Equal("memory.limit"))
-					Ω(metric.Host).Should(Equal("web-0"))
-					Ω(metric.Tags).Should(ConsistOf("application:atc"))
+					Expect(metric.Name).To(Equal("memory.limit"))
+					Expect(metric.Host).To(Equal("web-0"))
+					Expect(metric.Tags).To(ConsistOf("application:atc"))
 
-					Ω(metric.Points[0].Timestamp).ShouldNot(BeZero())
-					Ω(metric.Points[0].Value).Should(BeNumerically("~", 4.52, 0.01))
+					Expect(metric.Points[0].Timestamp).NotTo(BeZero())
+					Expect(metric.Points[0].Value).To(BeNumerically("~", 4.52, 0.01))
 
-					Ω(metric.Points[1].Timestamp).Should(Equal(time.Unix(now.Unix(), 0)))
-					Ω(metric.Points[1].Value).Should(BeNumerically("~", 23.22, 0.01))
+					Expect(metric.Points[1].Timestamp).To(Equal(time.Unix(now.Unix(), 0)))
+					Expect(metric.Points[1].Value).To(BeNumerically("~", 23.22, 0.01))
 
-					Ω(metric.Points[2].Timestamp).Should(Equal(time.Unix(now.Unix(), 0)))
-					Ω(metric.Points[2].Value).Should(BeNumerically("~", 23.25, 0.01))
+					Expect(metric.Points[2].Timestamp).To(Equal(time.Unix(now.Unix(), 0)))
+					Expect(metric.Points[2].Value).To(BeNumerically("~", 23.25, 0.01))
 				},
 				ghttp.RespondWith(http.StatusAccepted, "{}"),
 			))
@@ -76,7 +76,7 @@ var _ = Describe("Datadog", func() {
 				},
 			})
 
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 		})
 	})
 
@@ -90,7 +90,7 @@ var _ = Describe("Datadog", func() {
 			client := datadog.NewClient("api-key")
 
 			err := client.PublishSeries(datadog.Series{})
-			Ω(err).Should(HaveOccurred())
+			Expect(err).To(HaveOccurred())
 		})
 	})
 
@@ -106,7 +106,7 @@ var _ = Describe("Datadog", func() {
 			client := datadog.NewClient("api-key")
 
 			err := client.PublishSeries(datadog.Series{})
-			Ω(err).Should(HaveOccurred())
+			Expect(err).To(HaveOccurred())
 		})
 	})
 })

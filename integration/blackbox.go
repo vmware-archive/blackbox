@@ -34,11 +34,11 @@ func NewSyslogServer(inbox *Inbox) *SyslogServer {
 
 func (s *SyslogServer) Start() {
 	l, err := net.Listen("tcp", ":0")
-	Ω(err).ShouldNot(HaveOccurred())
+	Expect(err).NotTo(HaveOccurred())
 	l.Close()
 
 	_, port, err := net.SplitHostPort(l.Addr().String())
-	Ω(err).ShouldNot(HaveOccurred())
+	Expect(err).NotTo(HaveOccurred())
 
 	addr := fmt.Sprintf("127.0.0.1:%s", port)
 	s.server.Listen(addr)
@@ -107,11 +107,11 @@ func (runner *BlackboxRunner) Stop() {
 
 func (runner *BlackboxRunner) createConfigFile(config blackbox.Config) string {
 	configFile, err := ioutil.TempFile("", "blackbox_config")
-	Ω(err).ShouldNot(HaveOccurred())
+	Expect(err).NotTo(HaveOccurred())
 	defer configFile.Close()
 
 	yamlToWrite, err := yaml.Marshal(config)
-	Ω(err).ShouldNot(HaveOccurred())
+	Expect(err).NotTo(HaveOccurred())
 
 	configFile.Write(yamlToWrite)
 

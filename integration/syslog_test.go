@@ -56,7 +56,7 @@ var _ = Describe("Blackbox", func() {
 
 	It("logs any new lines of a watched file to syslog", func() {
 		fileToWatch, err := ioutil.TempFile("", "tail")
-		Ω(err).ShouldNot(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		config := buildConfig(fileToWatch.Name())
 		blackboxRunner.StartWithConfig(config)
@@ -68,14 +68,14 @@ var _ = Describe("Blackbox", func() {
 
 		var message *sl.Message
 		Eventually(inbox.Messages, "5s").Should(Receive(&message))
-		Ω(message.Content).Should(ContainSubstring("hello"))
-		Ω(message.Content).Should(ContainSubstring("test-tag"))
-		Ω(message.Content).Should(ContainSubstring(Hostname()))
+		Expect(message.Content).To(ContainSubstring("hello"))
+		Expect(message.Content).To(ContainSubstring("test-tag"))
+		Expect(message.Content).To(ContainSubstring(Hostname()))
 
 		Eventually(inbox.Messages, "2s").Should(Receive(&message))
-		Ω(message.Content).Should(ContainSubstring("world"))
-		Ω(message.Content).Should(ContainSubstring("test-tag"))
-		Ω(message.Content).Should(ContainSubstring(Hostname()))
+		Expect(message.Content).To(ContainSubstring("world"))
+		Expect(message.Content).To(ContainSubstring("test-tag"))
+		Expect(message.Content).To(ContainSubstring(Hostname()))
 
 		blackboxRunner.Stop()
 		fileToWatch.Close()
@@ -84,7 +84,7 @@ var _ = Describe("Blackbox", func() {
 
 	It("can have a custom hostname", func() {
 		fileToWatch, err := ioutil.TempFile("", "tail")
-		Ω(err).ShouldNot(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		config := buildConfigHostname("fake-hostname", fileToWatch.Name())
 		blackboxRunner.StartWithConfig(config)
@@ -95,9 +95,9 @@ var _ = Describe("Blackbox", func() {
 
 		var message *sl.Message
 		Eventually(inbox.Messages, "5s").Should(Receive(&message))
-		Ω(message.Content).Should(ContainSubstring("hello"))
-		Ω(message.Content).Should(ContainSubstring("test-tag"))
-		Ω(message.Content).Should(ContainSubstring("fake-hostname"))
+		Expect(message.Content).To(ContainSubstring("hello"))
+		Expect(message.Content).To(ContainSubstring("test-tag"))
+		Expect(message.Content).To(ContainSubstring("fake-hostname"))
 
 		blackboxRunner.Stop()
 		os.Remove(fileToWatch.Name())
@@ -105,7 +105,7 @@ var _ = Describe("Blackbox", func() {
 
 	It("does not log existing messages", func() {
 		fileToWatch, err := ioutil.TempFile("", "tail")
-		Ω(err).ShouldNot(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		fileToWatch.WriteString("already present\n")
 		fileToWatch.Sync()
@@ -119,8 +119,8 @@ var _ = Describe("Blackbox", func() {
 
 		var message *sl.Message
 		Eventually(inbox.Messages, "2s").Should(Receive(&message))
-		Ω(message.Content).Should(ContainSubstring("hello"))
-		Ω(message.Content).Should(ContainSubstring("test-tag"))
+		Expect(message.Content).To(ContainSubstring("hello"))
+		Expect(message.Content).To(ContainSubstring("test-tag"))
 
 		blackboxRunner.Stop()
 		os.Remove(fileToWatch.Name())

@@ -24,7 +24,7 @@ var _ = Describe("Expvar", func() {
 		server = ghttp.NewServer()
 		server.RouteToHandler("GET", "/debug/vars", func(w http.ResponseWriter, r *http.Request) {
 			contents, err := ioutil.ReadFile(filepath.Join("fixtures", "expvar.json"))
-			Ω(err).ShouldNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 			w.Write(contents)
 		})
 
@@ -39,7 +39,7 @@ var _ = Describe("Expvar", func() {
 
 	It("fetches expvar from a server", func() {
 		expvars, err := fetcher.Fetch()
-		Ω(err).ShouldNot(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
 		seen := map[string]float32{}
 
@@ -48,15 +48,15 @@ var _ = Describe("Expvar", func() {
 		})
 
 		// some random keys
-		Ω(seen).Should(HaveKeyWithValue("memstats.Alloc", float32(202208)))
-		Ω(seen).Should(HaveKeyWithValue("memstats.HeapReleased", float32(0)))
+		Expect(seen).To(HaveKeyWithValue("memstats.Alloc", float32(202208)))
+		Expect(seen).To(HaveKeyWithValue("memstats.HeapReleased", float32(0)))
 	})
 
 	It("lets people get the size of the expvars", func() {
 		expvars, err := fetcher.Fetch()
-		Ω(err).ShouldNot(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred())
 
-		Ω(expvars.Size()).Should(Equal(25))
+		Expect(expvars.Size()).To(Equal(25))
 	})
 
 	Context("when the server is down", func() {
@@ -67,7 +67,7 @@ var _ = Describe("Expvar", func() {
 
 		It("returns an error", func() {
 			_, err := fetcher.Fetch()
-			Ω(err).Should(HaveOccurred())
+			Expect(err).To(HaveOccurred())
 		})
 	})
 
@@ -80,7 +80,7 @@ var _ = Describe("Expvar", func() {
 
 		It("returns an error", func() {
 			_, err := fetcher.Fetch()
-			Ω(err).Should(HaveOccurred())
+			Expect(err).To(HaveOccurred())
 		})
 	})
 })

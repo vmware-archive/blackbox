@@ -20,7 +20,7 @@ func TestIntegration(t *testing.T) {
 var _ = BeforeSuite(func() {
 	var err error
 	blackboxPath, err = gexec.Build("github.com/concourse/blackbox/cmd/blackbox")
-	Ω(err).ShouldNot(HaveOccurred())
+	Expect(err).NotTo(HaveOccurred())
 })
 
 var _ = AfterSuite(func() {
@@ -29,6 +29,6 @@ var _ = AfterSuite(func() {
 
 func Hostname() string {
 	hostname, err := os.Hostname()
-	Ω(err).ShouldNot(HaveOccurred())
+	Expect(err).NotTo(HaveOccurred())
 	return hostname
 }
