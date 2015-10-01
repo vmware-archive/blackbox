@@ -33,6 +33,8 @@ var _ = Describe("Datadog", func() {
 	})
 
 	Context("when everything's great", func() {
+		now := time.Now()
+
 		BeforeEach(func() {
 			server.AppendHandlers(ghttp.CombineHandlers(
 				ghttp.VerifyRequest("POST", "/api/v1/series", "api_key=api-key"),
@@ -45,13 +47,13 @@ var _ = Describe("Datadog", func() {
 					Ω(metric.Host).Should(Equal("web-0"))
 					Ω(metric.Tags).Should(ConsistOf("application:atc"))
 
-					Ω(metric.Points[0].Timestamp).Should(BeTemporally("~", time.Now(), time.Second))
+					Ω(metric.Points[0].Timestamp).ShouldNot(BeZero())
 					Ω(metric.Points[0].Value).Should(BeNumerically("~", 4.52, 0.01))
 
-					Ω(metric.Points[1].Timestamp).Should(BeTemporally("~", time.Now(), time.Second))
+					Ω(metric.Points[1].Timestamp).Should(Equal(time.Unix(now.Unix(), 0)))
 					Ω(metric.Points[1].Value).Should(BeNumerically("~", 23.22, 0.01))
 
-					Ω(metric.Points[2].Timestamp).Should(BeTemporally("~", time.Now(), time.Second))
+					Ω(metric.Points[2].Timestamp).Should(Equal(time.Unix(now.Unix(), 0)))
 					Ω(metric.Points[2].Value).Should(BeNumerically("~", 23.25, 0.01))
 				},
 				ghttp.RespondWith(http.StatusAccepted, "{}"),
@@ -65,9 +67,9 @@ var _ = Describe("Datadog", func() {
 				{
 					Name: "memory.limit",
 					Points: []datadog.Point{
-						{time.Now(), 4.52},
-						{time.Now(), 23.22},
-						{time.Now(), 23.25},
+						{now, 4.52},
+						{now, 23.22},
+						{now, 23.25},
 					},
 					Host: "web-0",
 					Tags: []string{"application:atc"},
