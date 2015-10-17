@@ -32,7 +32,7 @@ func (tailer *Tailer) Run(signals <-chan os.Signal, ready chan<- struct{}) error
 	if err != nil {
 		return err
 	}
-	defer tail.Cleanup()
+	defer t.Cleanup()
 
 	close(ready)
 
