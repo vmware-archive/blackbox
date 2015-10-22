@@ -44,27 +44,10 @@ type SyslogConfig struct {
 	Sources     []SyslogSource `yaml:"sources"`
 }
 
-type ExpvarSource struct {
-	Name string   `yaml:"name"`
-	URL  string   `yaml:"url"`
-	Tags []string `yaml:"tags"`
-}
-
-type DatadogConfig struct {
-	APIKey string `yaml:"api_key"`
-}
-
-type ExpvarConfig struct {
-	Interval Duration       `yaml:"interval"`
-	Datadog  DatadogConfig  `yaml:"datadog"`
-	Sources  []ExpvarSource `yaml:"sources"`
-}
-
 type Config struct {
 	Hostname string `yaml:"hostname"`
 
 	Syslog SyslogConfig `yaml:"syslog"`
-	Expvar ExpvarConfig `yaml:"expvar"`
 }
 
 func LoadConfig(path string) (*Config, error) {
