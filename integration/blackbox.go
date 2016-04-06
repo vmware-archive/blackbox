@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 
+	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v2"
 
@@ -33,21 +34,25 @@ func NewSyslogServer(inbox *Inbox) *SyslogServer {
 }
 
 func (s *SyslogServer) Start() {
-	l, err := net.Listen("tcp", ":0")
+	port := fmt.Sprintf("%d", 9090+GinkgoParallelNode())
+	l, err := net.Listen("tcp", ":"+port)
 	Expect(err).NotTo(HaveOccurred())
 	l.Close()
 
-	_, port, err := net.SplitHostPort(l.Addr().String())
-	Expect(err).NotTo(HaveOccurred())
-
 	addr := fmt.Sprintf("127.0.0.1:%s", port)
-	s.server.Listen(addr)
+	err = s.server.Listen(addr)
+	Expect(err).NotTo(HaveOccurred())
 
 	s.Addr = addr
 }
 
 func (s *SyslogServer) Stop() {
 	s.server.Shutdown()
+	Eventually(func() error {
+		_, err := net.Dial("tcp", s.Addr)
+		return err
+	}).ShouldNot(BeNil())
+
 	s.Addr = ""
 }
 
