@@ -6,20 +6,21 @@ import (
 	"time"
 
 	"github.com/ActiveState/tail"
-	"github.com/ActiveState/tail/watch"
+	"github.com/hpcloud/tail/watch"
 
 	"github.com/concourse/blackbox/syslog"
 )
 
 type Tailer struct {
-	Source  SyslogSource
+	Path    string
+	Tag     string
 	Drainer syslog.Drainer
 }
 
 func (tailer *Tailer) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 	watch.POLL_DURATION = 1 * time.Second
 
-	t, err := tail.TailFile(tailer.Source.Path, tail.Config{
+	t, err := tail.TailFile(tailer.Path, tail.Config{
 		Follow: true,
 		ReOpen: true,
 		Poll:   true,
@@ -44,7 +45,7 @@ func (tailer *Tailer) Run(signals <-chan os.Signal, ready chan<- struct{}) error
 				return nil
 			}
 
-			tailer.Drainer.Drain(line.Text, tailer.Source.Tag)
+			tailer.Drainer.Drain(line.Text, tailer.Tag)
 		case <-signals:
 			return t.Stop()
 		}

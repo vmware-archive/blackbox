@@ -40,8 +40,8 @@ type SyslogSource struct {
 }
 
 type SyslogConfig struct {
-	Destination syslog.Drain   `yaml:"destination"`
-	Sources     []SyslogSource `yaml:"sources"`
+	Destination syslog.Drain `yaml:"destination"`
+	SourceDir   string       `yaml:"source_dir"`
 }
 
 type Config struct {
