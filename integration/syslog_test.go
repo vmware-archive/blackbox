@@ -43,7 +43,7 @@ var _ = Describe("Blackbox", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		logFile, err = os.OpenFile(
-			filepath.Join(logDir, tagName, "tail"),
+			filepath.Join(logDir, tagName, "tail.log"),
 			os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
 			os.ModePerm,
 		)
@@ -54,7 +54,8 @@ var _ = Describe("Blackbox", func() {
 		logFile.Close()
 
 		syslogServer.Stop()
-		os.RemoveAll(logDir)
+		err := os.RemoveAll(logDir)
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	buildConfigHostname := func(hostname string, dirToWatch string) blackbox.Config {
@@ -133,7 +134,7 @@ var _ = Describe("Blackbox", func() {
 
 	It("tracks logs in multiple files in source directory", func() {
 		anotherLogFile, err := os.OpenFile(
-			filepath.Join(logDir, tagName, "another-tail"),
+			filepath.Join(logDir, tagName, "another-tail.log"),
 			os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
 			os.ModePerm,
 		)
@@ -161,13 +162,61 @@ var _ = Describe("Blackbox", func() {
 		Expect(message.Content).To(ContainSubstring(Hostname()))
 	})
 
+	It("skips files not ending in .log", func() {
+		anotherLogFile, err := os.OpenFile(
+			filepath.Join(logDir, tagName, "another-tail.log"),
+			os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
+			os.ModePerm,
+		)
+		Expect(err).NotTo(HaveOccurred())
+		defer anotherLogFile.Close()
+
+		notALogFile, err := os.OpenFile(
+			filepath.Join(logDir, tagName, "not-a-log-file.log.1"),
+			os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
+			os.ModePerm,
+		)
+		Expect(err).NotTo(HaveOccurred())
+		defer notALogFile.Close()
+
+		config := buildConfig(logDir)
+		blackboxRunner.StartWithConfig(config)
+
+		logFile.WriteString("hello\n")
+		logFile.Sync()
+
+		notALogFile.WriteString("john cena\n")
+		notALogFile.Sync()
+
+		var message *sl.Message
+		Eventually(inbox.Messages, "5s").Should(Receive(&message))
+		Expect(message.Content).To(ContainSubstring("hello"))
+		Expect(message.Content).To(ContainSubstring("test-tag"))
+		Expect(message.Content).To(ContainSubstring(Hostname()))
+
+		Consistently(inbox.Messages).ShouldNot(Receive())
+
+		anotherLogFile.WriteString("hello from the other side\n")
+		anotherLogFile.Sync()
+
+		notALogFile.WriteString("my time is now\n")
+		notALogFile.Sync()
+
+		Eventually(inbox.Messages, "5s").Should(Receive(&message))
+		Expect(message.Content).To(ContainSubstring("hello from the other side"))
+		Expect(message.Content).To(ContainSubstring("test-tag"))
+		Expect(message.Content).To(ContainSubstring(Hostname()))
+
+		Consistently(inbox.Messages).ShouldNot(Receive())
+	})
+
 	It("tracks files in multiple directories using multiple tags", func() {
 		tagName2 := "2-test-2-tag"
 		err := os.Mkdir(filepath.Join(logDir, tagName2), os.ModePerm)
 		Expect(err).NotTo(HaveOccurred())
 
 		anotherLogFile, err := os.OpenFile(
-			filepath.Join(logDir, tagName2, "another-tail"),
+			filepath.Join(logDir, tagName2, "another-tail.log"),
 			os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
 			os.ModePerm,
 		)
@@ -200,7 +249,7 @@ var _ = Describe("Blackbox", func() {
 		blackboxRunner.StartWithConfig(config)
 
 		anotherLogFile, err := os.OpenFile(
-			filepath.Join(logDir, tagName, "another-tail"),
+			filepath.Join(logDir, tagName, "another-tail.log"),
 			os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
 			os.ModePerm,
 		)
@@ -242,13 +291,14 @@ var _ = Describe("Blackbox", func() {
 		Expect(message.Content).To(ContainSubstring("test-tag"))
 		Expect(message.Content).To(ContainSubstring(Hostname()))
 
-		os.Remove(filepath.Join(logDir, tagName, "tail"))
+		err := os.Remove(filepath.Join(logDir, tagName, "tail.log"))
+		Expect(err).NotTo(HaveOccurred())
 
 		// wait for tail process to die, tailer interval is 1 sec
 		time.Sleep(2 * time.Second)
 
 		anotherLogFile, err := os.OpenFile(
-			filepath.Join(logDir, tagName, "tail"),
+			filepath.Join(logDir, tagName, "tail.log"),
 			os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
 			os.ModePerm,
 		)
@@ -272,7 +322,7 @@ var _ = Describe("Blackbox", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		err = ioutil.WriteFile(
-			filepath.Join(logDir, tagName, "ignore-me", "and-my-son"),
+			filepath.Join(logDir, tagName, "ignore-me", "and-my-son.log"),
 			[]byte("some-data"),
 			os.ModePerm,
 		)
@@ -296,7 +346,7 @@ var _ = Describe("Blackbox", func() {
 
 	It("ignores files in source directory", func() {
 		err := ioutil.WriteFile(
-			filepath.Join(logDir, "not-a-tag-dir"),
+			filepath.Join(logDir, "not-a-tag-dir.log"),
 			[]byte("some-data"),
 			os.ModePerm,
 		)

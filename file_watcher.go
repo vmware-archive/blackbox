@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/concourse/blackbox/syslog"
@@ -62,6 +63,10 @@ func (f *fileWatcher) Watch() {
 			}
 
 			for _, logFile := range logFiles {
+				if !strings.HasSuffix(logFile.Name(), ".log") {
+					continue
+				}
+
 				logFileFullPath := filepath.Join(tagDirPath, logFile.Name())
 				if _, found := f.dynamicGroupClient.Get(logFileFullPath); !found {
 					f.dynamicGroupClient.Inserter() <- f.memberForFile(logFileFullPath)
