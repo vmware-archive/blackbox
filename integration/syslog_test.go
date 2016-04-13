@@ -189,7 +189,7 @@ var _ = Describe("Blackbox", func() {
 		notALogFile.Sync()
 
 		var message *sl.Message
-		Eventually(inbox.Messages, "5s").Should(Receive(&message))
+		Eventually(inbox.Messages, "30s").Should(Receive(&message))
 		Expect(message.Content).To(ContainSubstring("hello"))
 		Expect(message.Content).To(ContainSubstring("test-tag"))
 		Expect(message.Content).To(ContainSubstring(Hostname()))
