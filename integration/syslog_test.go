@@ -278,7 +278,7 @@ var _ = Describe("Blackbox", func() {
 		Expect(message.Content).To(ContainSubstring(Hostname()))
 	})
 
-	It("starts tracking logs in newly created files", func() {
+	It("continues discovering new files after the original files get deleted", func() {
 		config := buildConfig(logDir)
 		blackboxRunner.StartWithConfig(config)
 
