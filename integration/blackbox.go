@@ -88,7 +88,7 @@ func NewBlackboxRunner(blackboxPath string) *BlackboxRunner {
 }
 
 func (runner *BlackboxRunner) StartWithConfig(config blackbox.Config) {
-	configPath := runner.createConfigFile(config)
+	configPath := CreateConfigFile(config)
 
 	blackboxCmd := exec.Command(runner.blackboxPath, "-config", configPath)
 	blackboxRunner := ginkgomon.New(
@@ -110,7 +110,7 @@ func (runner *BlackboxRunner) Stop() {
 	ginkgomon.Interrupt(runner.blackboxProcess)
 }
 
-func (runner *BlackboxRunner) createConfigFile(config blackbox.Config) string {
+func CreateConfigFile(config blackbox.Config) string {
 	configFile, err := ioutil.TempFile("", "blackbox_config")
 	Expect(err).NotTo(HaveOccurred())
 	defer configFile.Close()

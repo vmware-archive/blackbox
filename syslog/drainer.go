@@ -1,9 +1,10 @@
 package syslog
 
 import (
+	"errors"
 	"time"
 
-	"github.com/papertrail/remote_syslog2/syslog"
+	sl "github.com/papertrail/remote_syslog2/syslog"
 )
 
 type Drain struct {
@@ -17,18 +18,29 @@ type Drainer interface {
 	Drain(line string, tag string) error
 }
 
+const ServerPollingInterval = 5 * time.Second
+
 type drainer struct {
-	logger   *syslog.Logger
+	logger   *sl.Logger
 	hostname string
 }
 
 func NewDrainer(drain Drain, hostname string) (*drainer, error) {
-	logger, err := syslog.Dial(
-		hostname,
-		drain.Transport,
-		drain.Address,
-		nil,
-	)
+	err := errors.New("non-nil")
+	var logger *sl.Logger
+
+	for err != nil {
+		logger, err = sl.Dial(
+			hostname,
+			drain.Transport,
+			drain.Address,
+			nil,
+		)
+
+		if err != nil {
+			time.Sleep(ServerPollingInterval)
+		}
+	}
 
 	if err != nil {
 		return nil, err
@@ -41,9 +53,9 @@ func NewDrainer(drain Drain, hostname string) (*drainer, error) {
 }
 
 func (d *drainer) Drain(line string, tag string) error {
-	d.logger.Packets <- syslog.Packet{
-		Severity: syslog.SevInfo,
-		Facility: syslog.LogUser,
+	d.logger.Packets <- sl.Packet{
+		Severity: sl.SevInfo,
+		Facility: sl.LogUser,
 		Hostname: d.hostname,
 		Tag:      tag,
 		Time:     time.Now(),

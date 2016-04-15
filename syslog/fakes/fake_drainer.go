@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/concourse/blackbox/syslog"
-	"github.com/papertrail/remote_syslog2/syslog"
 )
 
 type FakeDrainer struct {
