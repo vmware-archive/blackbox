@@ -92,7 +92,7 @@ var _ = Describe("Blackbox", func() {
 
 		It("logs any new lines of a file in source directory to syslog with subdirectory name as tag", func() {
 			config := buildConfig(logDir)
-			blackboxRunner.StartWithConfig(config)
+			blackboxRunner.StartWithConfig(config, 1)
 
 			logFile.WriteString("hello\n")
 			logFile.WriteString("world\n")
@@ -115,7 +115,7 @@ var _ = Describe("Blackbox", func() {
 
 		It("can have a custom hostname", func() {
 			config := buildConfigHostname("fake-hostname", logDir)
-			blackboxRunner.StartWithConfig(config)
+			blackboxRunner.StartWithConfig(config, 1)
 
 			logFile.WriteString("hello\n")
 			logFile.Sync()
@@ -134,7 +134,7 @@ var _ = Describe("Blackbox", func() {
 			logFile.Sync()
 
 			config := buildConfig(logDir)
-			blackboxRunner.StartWithConfig(config)
+			blackboxRunner.StartWithConfig(config, 1)
 
 			logFile.WriteString("hello\n")
 			logFile.Sync()
@@ -157,7 +157,7 @@ var _ = Describe("Blackbox", func() {
 			defer anotherLogFile.Close()
 
 			config := buildConfig(logDir)
-			blackboxRunner.StartWithConfig(config)
+			blackboxRunner.StartWithConfig(config, 2)
 
 			logFile.WriteString("hello\n")
 			logFile.Sync()
@@ -195,7 +195,7 @@ var _ = Describe("Blackbox", func() {
 			defer notALogFile.Close()
 
 			config := buildConfig(logDir)
-			blackboxRunner.StartWithConfig(config)
+			blackboxRunner.StartWithConfig(config, 2)
 
 			logFile.WriteString("hello\n")
 			logFile.Sync()
@@ -239,7 +239,7 @@ var _ = Describe("Blackbox", func() {
 			defer anotherLogFile.Close()
 
 			config := buildConfig(logDir)
-			blackboxRunner.StartWithConfig(config)
+			blackboxRunner.StartWithConfig(config, 2)
 
 			logFile.WriteString("hello\n")
 			logFile.Sync()
@@ -261,7 +261,7 @@ var _ = Describe("Blackbox", func() {
 
 		It("starts tracking logs in newly created files", func() {
 			config := buildConfig(logDir)
-			blackboxRunner.StartWithConfig(config)
+			blackboxRunner.StartWithConfig(config, 1)
 
 			anotherLogFile, err := os.OpenFile(
 				filepath.Join(logDir, tagName, "another-tail.log"),
@@ -295,7 +295,7 @@ var _ = Describe("Blackbox", func() {
 
 		It("continues discovering new files after the original files get deleted", func() {
 			config := buildConfig(logDir)
-			blackboxRunner.StartWithConfig(config)
+			blackboxRunner.StartWithConfig(config, 1)
 
 			logFile.WriteString("hello\n")
 			logFile.Sync()
@@ -344,7 +344,7 @@ var _ = Describe("Blackbox", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			config := buildConfig(logDir)
-			blackboxRunner.StartWithConfig(config)
+			blackboxRunner.StartWithConfig(config, 1)
 
 			logFile.WriteString("hello\n")
 			logFile.Sync()
@@ -368,7 +368,7 @@ var _ = Describe("Blackbox", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			config := buildConfig(logDir)
-			blackboxRunner.StartWithConfig(config)
+			blackboxRunner.StartWithConfig(config, 1)
 
 			logFile.WriteString("hello\n")
 			logFile.Sync()

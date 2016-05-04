@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -87,7 +88,7 @@ func NewBlackboxRunner(blackboxPath string) *BlackboxRunner {
 	}
 }
 
-func (runner *BlackboxRunner) StartWithConfig(config blackbox.Config) {
+func (runner *BlackboxRunner) StartWithConfig(config blackbox.Config, tailerCount int) {
 	configPath := CreateConfigFile(config)
 
 	blackboxCmd := exec.Command(runner.blackboxPath, "-config", configPath)
@@ -96,7 +97,7 @@ func (runner *BlackboxRunner) StartWithConfig(config blackbox.Config) {
 			Name:          "blackbox",
 			Command:       blackboxCmd,
 			AnsiColorCode: "90m",
-			StartCheck:    "Seeked",
+			StartCheck:    "Seeked" + strings.Repeat(".*\\n.*Seeked", tailerCount-1),
 			Cleanup: func() {
 				os.Remove(configPath)
 			},
