@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/ActiveState/tail"
+	"github.com/hpcloud/tail"
 	"github.com/hpcloud/tail/watch"
 
 	"github.com/concourse/blackbox/syslog"
