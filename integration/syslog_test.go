@@ -420,7 +420,7 @@ var _ = Describe("Blackbox", func() {
 				Buffer: buffer,
 			})
 
-			Eventually(session.Err, "5s").Should(gbytes.Say("Seeked"))
+			Eventually(session.Err, "10s").Should(gbytes.Say("Seeked"))
 
 			logFile.WriteString("hello\n")
 			logFile.WriteString("world\n")
