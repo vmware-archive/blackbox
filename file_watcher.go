@@ -57,24 +57,32 @@ func (f *fileWatcher) Watch() {
 				continue
 			}
 
-			logFiles, err := ioutil.ReadDir(tagDirPath)
-			if err != nil {
-				f.logger.Fatalf("could not list files in log dir %s: %s\n", tag, err)
-			}
+			f.findLogsToWatch(tag, tagDirPath, fileInfo)
 
-			for _, logFile := range logFiles {
-				if !strings.HasSuffix(logFile.Name(), ".log") {
-					continue
-				}
-
-				logFileFullPath := filepath.Join(tagDirPath, logFile.Name())
-				if _, found := f.dynamicGroupClient.Get(logFileFullPath); !found {
-					f.dynamicGroupClient.Inserter() <- f.memberForFile(logFileFullPath)
-				}
-			}
 		}
 
 		time.Sleep(POLL_INTERVAL)
+	}
+}
+
+func (f *fileWatcher) findLogsToWatch(tag string, filePath string, file os.FileInfo) {
+	if !file.IsDir() {
+		if strings.HasSuffix(file.Name(), ".log") {
+			if _, found := f.dynamicGroupClient.Get(filePath); !found {
+				f.dynamicGroupClient.Inserter() <- f.memberForFile(filePath)
+			}
+		}
+		return
+	}
+
+	dirContents, err := ioutil.ReadDir(filePath)
+	if err != nil {
+		f.logger.Fatalf("could not list files in log dir %s: %s\n", tag, err)
+	}
+
+	for _, content := range dirContents {
+		currentFilePath := filepath.Join(filePath, content.Name())
+		f.findLogsToWatch(tag, currentFilePath, content)
 	}
 }
 

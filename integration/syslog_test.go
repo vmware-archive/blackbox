@@ -332,13 +332,13 @@ var _ = Describe("Blackbox", func() {
 			Expect(message.Content).To(ContainSubstring(Hostname()))
 		})
 
-		It("ignores subdirectories in tag directories", func() {
-			err := os.Mkdir(filepath.Join(logDir, tagName, "ignore-me"), os.ModePerm)
+		It("does not ignore subdirectories in tag directories", func() {
+			err := os.Mkdir(filepath.Join(logDir, tagName, "do-not-ignore-me"), os.ModePerm)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = ioutil.WriteFile(
-				filepath.Join(logDir, tagName, "ignore-me", "and-my-son.log"),
-				[]byte("some-data"),
+			childLog, err := os.OpenFile(
+				filepath.Join(logDir, tagName, "do-not-ignore-me", "and-my-son.log"),
+				os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
 				os.ModePerm,
 			)
 			Expect(err).NotTo(HaveOccurred())
@@ -353,6 +353,15 @@ var _ = Describe("Blackbox", func() {
 			var message *sl.Message
 			Eventually(inbox.Messages, "5s").Should(Receive(&message))
 			Expect(message.Content).To(ContainSubstring("hello"))
+			Expect(message.Content).To(ContainSubstring("test-tag"))
+			Expect(message.Content).To(ContainSubstring(Hostname()))
+
+			childLog.WriteString("child data\n")
+			childLog.Sync()
+			childLog.Close()
+
+			Eventually(inbox.Messages, "5s").Should(Receive(&message))
+			Expect(message.Content).To(ContainSubstring("child data"))
 			Expect(message.Content).To(ContainSubstring("test-tag"))
 			Expect(message.Content).To(ContainSubstring(Hostname()))
 
