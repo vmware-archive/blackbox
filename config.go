@@ -34,11 +34,6 @@ func (d *Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-type SyslogSource struct {
-	Path string `yaml:"path"`
-	Tag  string `yaml:"tag"`
-}
-
 type SyslogConfig struct {
 	Destination syslog.Drain `yaml:"destination"`
 	SourceDir   string       `yaml:"source_dir"`
