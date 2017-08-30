@@ -33,14 +33,27 @@ func main() {
 		logger.Fatalf("could not load config file: %s\n", err)
 	}
 
+	if config.Syslog.SourceDir == "" && len(config.Syslog.SourceDirs) == 0 {
+		logger.Fatalf("neither source_dir nor source_dirs have been specified")
+	}
+
 	group := grouper.NewDynamic(nil, 0, 0)
 	running := ifrit.Invoke(sigmon.New(group))
 
-	go func() {
-		drainerFactory := syslog.NewDrainerFactory(config.Syslog.Destination, config.Hostname)
-		fileWatcher := blackbox.NewFileWatcher(logger, config.Syslog.SourceDir, group.Client(), drainerFactory)
-		fileWatcher.Watch()
-	}()
+	drainerFactory := syslog.NewDrainerFactory(config.Syslog.Destination, config.Hostname)
+	if config.Syslog.SourceDir != "" {
+		go func() {
+			fileWatcher := blackbox.NewFileWatcher(logger, config.Syslog.SourceDir, group.Client(), drainerFactory)
+			fileWatcher.Watch()
+		}()
+	}
+
+	for _, dir := range config.Syslog.SourceDirs {
+		go func(dir string) {
+			fileWatcher := blackbox.NewFileWatcher(logger, dir, group.Client(), drainerFactory)
+			fileWatcher.Watch()
+		}(dir)
+	}
 
 	err = <-running.Wait()
 	if err != nil {

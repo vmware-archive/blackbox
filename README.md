@@ -12,7 +12,8 @@ concern and the application should not know about where it is logging. Blackbox
 is an experiment to decouple syslogging from an application without messing
 about with syslog configuration (which is tricky on BOSH VMs).
 
-Blackbox will tail all files in sub-directories of a specified `source_dir`, and forward any new lines to a syslog server.
+Blackbox will tail all *.log files in sub-directories of the specified source directories and forward any new lines to a syslog server.
+Source directories can be speficified using `source_dir` (single string value) or `source_dirs` (array of strings).
 
 ## Usage
 
@@ -31,6 +32,9 @@ syslog:
     address: logs.example.com:1234
 
   source_dir: /path/to/log-dir
+  source_dirs:
+  - /path/to/logs2
+  - /path/to/logs3
 ```
 
 Consider the case where `log-dir` has the following structure:

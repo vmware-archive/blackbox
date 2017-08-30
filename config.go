@@ -37,6 +37,7 @@ func (d *Duration) UnmarshalYAML(unmarshal func(interface{}) error) error {
 type SyslogConfig struct {
 	Destination syslog.Drain `yaml:"destination"`
 	SourceDir   string       `yaml:"source_dir"`
+	SourceDirs  []string     `yaml:"source_dirs"`
 }
 
 type Config struct {
