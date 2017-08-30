@@ -36,11 +36,13 @@ func main() {
 	group := grouper.NewDynamic(nil, 0, 0)
 	running := ifrit.Invoke(sigmon.New(group))
 
-	go func() {
-		drainerFactory := syslog.NewDrainerFactory(config.Syslog.Destination, config.Hostname)
-		fileWatcher := blackbox.NewFileWatcher(logger, config.Syslog.SourceDir, group.Client(), drainerFactory)
-		fileWatcher.Watch()
-	}()
+	if config.Syslog.SourceDir != "" {
+		go func() {
+			drainerFactory := syslog.NewDrainerFactory(config.Syslog.Destination, config.Hostname)
+			fileWatcher := blackbox.NewFileWatcher(logger, config.Syslog.SourceDir, group.Client(), drainerFactory)
+			fileWatcher.Watch()
+		}()
+	}
 
 	for _, dir := range config.Syslog.SourceDirs {
 		go func(dir string) {
