@@ -69,7 +69,7 @@ var _ = Describe("Blackbox", func() {
 			blackboxRunner = NewBlackboxRunner(blackboxPath)
 		})
 
-		buildConfigHostname := func(hostname string, dirToWatch string) blackbox.Config {
+		buildConfigHostname := func(hostname string, dirsToWatch ...string) blackbox.Config {
 			return blackbox.Config{
 				Hostname: hostname,
 				Syslog: blackbox.SyslogConfig{
@@ -77,13 +77,13 @@ var _ = Describe("Blackbox", func() {
 						Transport: "udp",
 						Address:   syslogServer.Addr,
 					},
-					SourceDir: dirToWatch,
+					SourceDirs: dirsToWatch,
 				},
 			}
 		}
 
-		buildConfig := func(dirToWatch string) blackbox.Config {
-			return buildConfigHostname("", dirToWatch)
+		buildConfig := func(dirToWatch ...string) blackbox.Config {
+			return buildConfigHostname("", dirToWatch...)
 		}
 
 		AfterEach(func() {
@@ -174,6 +174,49 @@ var _ = Describe("Blackbox", func() {
 			Eventually(inbox.Messages, "5s").Should(Receive(&message))
 			Expect(message.Content).To(ContainSubstring("hello from the other side"))
 			Expect(message.Content).To(ContainSubstring("test-tag"))
+			Expect(message.Content).To(ContainSubstring(Hostname()))
+		})
+
+		It("tracks logs in multiple files in multiple source directories using multiple tags", func() {
+			var (
+				logDir2  string
+				tagName2 string
+				err      error
+			)
+
+			logDir2, err = ioutil.TempDir("", "syslog-test2")
+			Expect(err).NotTo(HaveOccurred())
+
+			tagName2 = "2-test-2-tag"
+			err = os.Mkdir(filepath.Join(logDir2, tagName2), os.ModePerm)
+			Expect(err).NotTo(HaveOccurred())
+
+			anotherLogFile, err := os.OpenFile(
+				filepath.Join(logDir2, tagName2, "another-tail.log"),
+				os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
+				os.ModePerm,
+			)
+			Expect(err).NotTo(HaveOccurred())
+			defer anotherLogFile.Close()
+
+			config := buildConfig(logDir, logDir2)
+			blackboxRunner.StartWithConfig(config, 2)
+
+			logFile.WriteString("hello\n")
+			logFile.Sync()
+
+			var message *sl.Message
+			Eventually(inbox.Messages, "5s").Should(Receive(&message))
+			Expect(message.Content).To(ContainSubstring("hello"))
+			Expect(message.Content).To(ContainSubstring("test-tag"))
+			Expect(message.Content).To(ContainSubstring(Hostname()))
+
+			anotherLogFile.WriteString("hello from the other side\n")
+			anotherLogFile.Sync()
+
+			Eventually(inbox.Messages, "5s").Should(Receive(&message))
+			Expect(message.Content).To(ContainSubstring("hello from the other side"))
+			Expect(message.Content).To(ContainSubstring("2-test-2-tag"))
 			Expect(message.Content).To(ContainSubstring(Hostname()))
 		})
 
@@ -281,6 +324,53 @@ var _ = Describe("Blackbox", func() {
 			Eventually(inbox.Messages, "5s").Should(Receive(&message))
 			Expect(message.Content).To(ContainSubstring("hello from the other side"))
 			Expect(message.Content).To(ContainSubstring("test-tag"))
+			Expect(message.Content).To(ContainSubstring(Hostname()))
+
+			By("keeping track of old files")
+			logFile.WriteString("hello\n")
+			logFile.Sync()
+
+			Eventually(inbox.Messages, "5s").Should(Receive(&message))
+			Expect(message.Content).To(ContainSubstring("hello"))
+			Expect(message.Content).To(ContainSubstring("test-tag"))
+			Expect(message.Content).To(ContainSubstring(Hostname()))
+		})
+
+		It("starts tracking logs in newly created files in multiple source directories", func() {
+			var (
+				logDir2  string
+				tagName2 string
+				err      error
+			)
+
+			logDir2, err = ioutil.TempDir("", "syslog-test2")
+			Expect(err).NotTo(HaveOccurred())
+
+			tagName2 = "2-test-2-tag"
+			err = os.Mkdir(filepath.Join(logDir2, tagName2), os.ModePerm)
+			Expect(err).NotTo(HaveOccurred())
+
+			config := buildConfig(logDir, logDir2)
+			blackboxRunner.StartWithConfig(config, 1)
+
+			anotherLogFile, err := os.OpenFile(
+				filepath.Join(logDir2, tagName2, "another-tail.log"),
+				os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
+				os.ModePerm,
+			)
+			Expect(err).NotTo(HaveOccurred())
+			defer anotherLogFile.Close()
+
+			// wait for tailer to pick up file, twice the interval
+			time.Sleep(10 * time.Second)
+
+			anotherLogFile.WriteString("hello from the other side\n")
+			anotherLogFile.Sync()
+
+			var message *sl.Message
+			Eventually(inbox.Messages, "5s").Should(Receive(&message))
+			Expect(message.Content).To(ContainSubstring("hello from the other side"))
+			Expect(message.Content).To(ContainSubstring("2-test-2-tag"))
 			Expect(message.Content).To(ContainSubstring(Hostname()))
 
 			By("keeping track of old files")
