@@ -33,6 +33,10 @@ func main() {
 		logger.Fatalf("could not load config file: %s\n", err)
 	}
 
+	if config.Syslog.SourceDir == "" && len(config.Syslog.SourceDirs) == 0 {
+		logger.Fatalf("neither source_dir nor source_dirs have been specified")
+	}
+
 	group := grouper.NewDynamic(nil, 0, 0)
 	running := ifrit.Invoke(sigmon.New(group))
 
