@@ -77,7 +77,8 @@ func (f *fileWatcher) findLogsToWatch(tag string, filePath string, file os.FileI
 
 	dirContents, err := ioutil.ReadDir(filePath)
 	if err != nil {
-		f.logger.Fatalf("could not list files in log dir %s: %s\n", tag, err)
+		f.logger.Printf("skipping log dir '%s' (could not list files): %s\n", tag, err)
+		return
 	}
 
 	for _, content := range dirContents {
