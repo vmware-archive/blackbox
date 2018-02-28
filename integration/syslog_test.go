@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -175,6 +176,8 @@ var _ = Describe("Blackbox", func() {
 			Expect(message.Content).To(ContainSubstring("hello from the other side"))
 			Expect(message.Content).To(ContainSubstring("test-tag"))
 			Expect(message.Content).To(ContainSubstring(Hostname()))
+
+			blackboxRunner.Stop()
 		})
 
 		It("skips files not ending in .log", func() {
@@ -223,6 +226,8 @@ var _ = Describe("Blackbox", func() {
 			Expect(message.Content).To(ContainSubstring(Hostname()))
 
 			Consistently(inbox.Messages).ShouldNot(Receive())
+
+			blackboxRunner.Stop()
 		})
 
 		It("tracks files in multiple directories using multiple tags", func() {
@@ -257,6 +262,8 @@ var _ = Describe("Blackbox", func() {
 			Expect(message.Content).To(ContainSubstring("hello from the other side"))
 			Expect(message.Content).To(ContainSubstring("2-test-2-tag"))
 			Expect(message.Content).To(ContainSubstring(Hostname()))
+
+			blackboxRunner.Stop()
 		})
 
 		It("starts tracking logs in newly created files", func() {
@@ -291,6 +298,8 @@ var _ = Describe("Blackbox", func() {
 			Expect(message.Content).To(ContainSubstring("hello"))
 			Expect(message.Content).To(ContainSubstring("test-tag"))
 			Expect(message.Content).To(ContainSubstring(Hostname()))
+
+			blackboxRunner.Stop()
 		})
 
 		It("continues discovering new files after the original files get deleted", func() {
@@ -299,6 +308,7 @@ var _ = Describe("Blackbox", func() {
 
 			logFile.WriteString("hello\n")
 			logFile.Sync()
+			logFile.Close()
 
 			var message *sl.Message
 			Eventually(inbox.Messages, "5s").Should(Receive(&message))
@@ -306,7 +316,7 @@ var _ = Describe("Blackbox", func() {
 			Expect(message.Content).To(ContainSubstring("test-tag"))
 			Expect(message.Content).To(ContainSubstring(Hostname()))
 
-			err := os.Remove(filepath.Join(logDir, tagName, "tail.log"))
+			err := os.Rename(filepath.Join(logDir, tagName, "tail.log"), filepath.Join(logDir, tagName, "tail.log.1"))
 			Expect(err).NotTo(HaveOccurred())
 
 			// wait for tail process to die, tailer interval is 1 sec
@@ -330,6 +340,8 @@ var _ = Describe("Blackbox", func() {
 			Expect(message.Content).To(ContainSubstring("bye"))
 			Expect(message.Content).To(ContainSubstring("test-tag"))
 			Expect(message.Content).To(ContainSubstring(Hostname()))
+
+			blackboxRunner.Stop()
 		})
 
 		It("does not ignore subdirectories in tag directories", func() {
@@ -445,20 +457,27 @@ var _ = Describe("Blackbox", func() {
 
 			time.Sleep(2 * syslog.ServerPollingInterval)
 
+			buffer2 := gbytes.NewBuffer()
 			serverProcess = ginkgomon.Invoke(&TcpSyslogServer{
 				Addr:   address,
-				Buffer: buffer,
+				Buffer: buffer2,
 			})
 
 			logFile.WriteString("more\n")
 			logFile.Sync()
 			logFile.Close()
 
-			Eventually(buffer, "5s").Should(gbytes.Say("can't log this"))
-			Eventually(buffer, "5s").Should(gbytes.Say("more"))
+			Eventually(buffer2, "5s").Should(gbytes.Say("can't log this"))
+			Eventually(buffer2, "5s").Should(gbytes.Say("more"))
 
-			session.Signal(os.Interrupt)
-			session.Wait()
+			ginkgomon.Interrupt(serverProcess)
+
+			if runtime.GOOS == "windows" {
+				session.Kill()
+			} else {
+				session.Signal(os.Interrupt)
+				session.Wait()
+			}
 		})
 	})
 })
