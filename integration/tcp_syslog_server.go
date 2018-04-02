@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/onsi/gomega/gbytes"
 )
@@ -27,16 +28,27 @@ func (s *TcpSyslogServer) Run(signals <-chan os.Signal, ready chan<- struct{}) e
 
 	close(ready)
 
+	var conn net.Conn
+
 	go func() {
 		for {
 			// Listen for an incoming connection.
-			conn, err := l.Accept()
+			conn, err = l.Accept()
 			if err != nil {
 				return
 			}
 
 			_, err = io.Copy(s.Buffer, conn)
+
+			// io.Copy is blocking. So when we close the underlying connection after
+			// being signalled, we need to check for that error
 			if err != nil {
+				newErr, ok := err.(*net.OpError)
+				if ok {
+					if strings.Contains(newErr.Error(), "use of closed network connection") {
+						return
+					}
+				}
 				panic(err)
 			}
 
@@ -45,6 +57,9 @@ func (s *TcpSyslogServer) Run(signals <-chan os.Signal, ready chan<- struct{}) e
 	}()
 
 	<-signals
+	if conn != nil {
+		conn.Close()
+	}
 
 	return nil
 }

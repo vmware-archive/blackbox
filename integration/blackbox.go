@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 
 	. "github.com/onsi/ginkgo"
@@ -108,7 +109,11 @@ func (runner *BlackboxRunner) StartWithConfig(config blackbox.Config, tailerCoun
 }
 
 func (runner *BlackboxRunner) Stop() {
-	ginkgomon.Interrupt(runner.blackboxProcess)
+	if runtime.GOOS == "windows" {
+		ginkgomon.Kill(runner.blackboxProcess)
+	} else {
+		ginkgomon.Interrupt(runner.blackboxProcess)
+	}
 }
 
 func CreateConfigFile(config blackbox.Config) string {
