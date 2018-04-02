@@ -37,7 +37,7 @@ func NewDrainer(drain Drain, hostname string) (*drainer, error) {
 			nil,
 			30*time.Second,
 			30*time.Second,
-			9990,
+			99990,
 		)
 
 		if err != nil {
